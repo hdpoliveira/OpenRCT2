@@ -9289,113 +9289,85 @@ int32_t Vehicle::UpdateTrackMotionMiniGolf(int32_t* outStation)
         }
     }
 
-    regs.eax = 0;
-    regs.dx = 0;
-    regs.ebx = 0;
+    int32_t sumAcceleration = 0;
+    int32_t numVehicles = 0;
     uint16_t totalMass = 0;
 
     for (Vehicle* vehicle = this;;)
     {
-        regs.ebx++;
-        regs.dx |= vehicle->update_flags;
+        numVehicles++;
         totalMass += vehicle->mass;
-        regs.eax += vehicle->acceleration;
-        regs.si = vehicle->next_vehicle_on_train;
-        if (static_cast<uint16_t>(regs.si) == SPRITE_INDEX_NULL)
+        sumAcceleration += vehicle->acceleration;
+        if (vehicle->next_vehicle_on_train == SPRITE_INDEX_NULL)
         {
             break;
         }
-        vehicle = GET_VEHICLE(static_cast<uint16_t>(regs.si));
+        vehicle = GET_VEHICLE(vehicle->next_vehicle_on_train);
     }
 
-    regs.eax /= regs.ebx;
-    regs.ecx = (regs.eax * 21) >> 9;
-    regs.eax = velocity >> 12;
-    regs.ecx -= regs.eax;
-    regs.ebx = velocity;
-    regs.edx = velocity >> 8;
-    regs.edx *= regs.edx;
-    if (regs.ebx < 0)
-    {
-        regs.edx = -regs.edx;
-    }
-    regs.edx >>= 4;
-    regs.eax = regs.edx / totalMass;
-    regs.ecx -= regs.eax;
+    int32_t newAcceleration = (sumAcceleration / numVehicles * 21) >> 9;
+    newAcceleration -= velocity >> 12;
+    newAcceleration -= (((velocity >> 8) * abs(velocity >> 8)) >> 4) / totalMass;
 
-    if (!(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_POWERED))
+    if (vehicleEntry->flags & VEHICLE_ENTRY_FLAG_POWERED)
     {
-        goto loc_6DD069;
-    }
-    if (vehicleEntry->flags & VEHICLE_ENTRY_FLAG_POWERED_RIDE_UNRESTRICTED_GRAVITY)
-    {
-        regs.eax = speed * 0x4000;
-        if (regs.eax < velocity)
+        int32_t poweredAcceleration = speed << 14;
+        if (!(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_POWERED_RIDE_UNRESTRICTED_GRAVITY) || poweredAcceleration >= velocity)
         {
-            goto loc_6DD069;
-        }
-    }
-    regs.eax = speed;
-    regs.bx = track_type >> 2;
-    regs.ebx = regs.eax;
-    regs.eax <<= 14;
-    regs.ebx *= totalMass;
-    regs.ebx >>= 2;
-    if (UpdateFlag(VEHICLE_UPDATE_FLAG_REVERSING_SHUTTLE))
-    {
-        regs.eax = -regs.eax;
-    }
-    regs.eax -= velocity;
-    regs.edx = powered_acceleration;
-    regs.edx <<= 1;
-    regs.eax *= regs.edx;
-    regs.eax = regs.eax / regs.ebx;
-
-    if (!(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_WATER_RIDE))
-    {
-        goto loc_6DD054;
-    }
-
-    if (regs.eax < 0)
-    {
-        regs.eax >>= 4;
-    }
-
-    if (vehicleEntry->flags & VEHICLE_ENTRY_FLAG_SPINNING)
-    {
-        spin_speed = std::clamp(spin_speed, VEHICLE_MIN_SPIN_SPEED_WATER_RIDE, VEHICLE_MAX_SPIN_SPEED_WATER_RIDE);
-    }
-
-    if (vehicle_sprite_type != 0)
-    {
-        regs.eax = std::max(0, regs.eax);
-        if (vehicleEntry->flags & VEHICLE_ENTRY_FLAG_SPINNING)
-        {
-            if (vehicle_sprite_type == 2)
+            if (UpdateFlag(VEHICLE_UPDATE_FLAG_REVERSING_SHUTTLE))
             {
-                spin_speed = 0;
+                poweredAcceleration = -poweredAcceleration;
             }
-        }
-    }
-    else
-    {
-    loc_6DD054:
-        regs.ebx = abs(velocity);
-        if (regs.ebx > 0x10000)
-        {
-            regs.ecx = 0;
-        }
-    }
-    regs.ecx += regs.eax;
+            poweredAcceleration -= velocity;
+            poweredAcceleration = poweredAcceleration * (powered_acceleration << 1) / ((speed * totalMass) >> 2);
 
-loc_6DD069:
-    acceleration = regs.ecx;
-    regs.eax = _vehicleMotionTrackFlags;
-    regs.ebx = _vehicleStationIndex;
+            if (!(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_WATER_RIDE))
+            {
+                if (abs(velocity) > 0x10000)
+                {
+                    newAcceleration = 0;
+                }
+            }
+            else
+            {
+                if (poweredAcceleration < 0)
+                {
+                    poweredAcceleration >>= 4;
+                }
+
+                if (vehicleEntry->flags & VEHICLE_ENTRY_FLAG_SPINNING)
+                {
+                    spin_speed = std::clamp(spin_speed, VEHICLE_MIN_SPIN_SPEED_WATER_RIDE, VEHICLE_MAX_SPIN_SPEED_WATER_RIDE);
+                }
+
+                if (vehicle_sprite_type != 0)
+                {
+                    poweredAcceleration = std::max(0, poweredAcceleration);
+                    if (vehicleEntry->flags & VEHICLE_ENTRY_FLAG_SPINNING)
+                    {
+                        if (vehicle_sprite_type == 2)
+                        {
+                            spin_speed = 0;
+                        }
+                    }
+                }
+                else
+                {
+                    if (abs(velocity) > 0x10000)
+                    {
+                        newAcceleration = 0;
+                    }
+                }
+            }
+            newAcceleration += poweredAcceleration;
+        }
+    }
+
+    acceleration = newAcceleration;
 
     if (outStation != nullptr)
-        *outStation = regs.ebx;
-    return regs.eax;
+        *outStation = _vehicleStationIndex;
+    return _vehicleMotionTrackFlags;
 }
 
 /**
