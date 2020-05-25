@@ -9026,7 +9026,9 @@ loc_6DC985:
 loc_6DC99A:
     if (remaining_distance < 0x368A)
     {
-        goto loc_6DCDE4;
+        MoveTo(unk_F64E20);
+        Invalidate();
+        goto loc_6DCE02;
     }
     acceleration = dword_9A2970[vehicle_sprite_type];
     _vehicleUnkF64E10++;
@@ -9158,7 +9160,9 @@ loc_6DCC2C:
 loc_6DCD2B:
     if (remaining_distance >= 0)
     {
-        goto loc_6DCDE4;
+        MoveTo(unk_F64E20);
+        Invalidate();
+        goto loc_6DCE02;
     }
     acceleration += dword_9A2970[vehicle_sprite_type];
     _vehicleUnkF64E10++;
@@ -9190,10 +9194,6 @@ loc_6DCD6B:
     }
     _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_2;
     goto loc_6DC99A;
-
-loc_6DCDE4:
-    MoveTo(unk_F64E20);
-    Invalidate();
 
 loc_6DCE02:
     acceleration /= _vehicleUnkF64E10;
