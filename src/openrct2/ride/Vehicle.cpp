@@ -9153,7 +9153,24 @@ loc_6DCA9A:
             otherVehicleIndex = var_44;
             if (vehicle_update_motion_collision_detection(this, trackPos.x, trackPos.y, trackPos.z, &otherVehicleIndex))
             {
-                goto loc_6DCD6B;
+                _vehicleVelocityF64E0C -= remaining_distance - 0x368A;
+                remaining_distance = 0x368A;
+                {
+                    Vehicle* vEBP = GET_VEHICLE(otherVehicleIndex);
+                    Vehicle* vEDI = gCurrentVehicle;
+                    regs.eax = abs(vEDI->velocity - vEBP->velocity);
+                    if (regs.eax > 0xE0000)
+                    {
+                        if (!(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_BOAT_HIRE_COLLISION_DETECTION))
+                        {
+                            _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_VEHICLE_COLLISION;
+                        }
+                    }
+                    vEDI->velocity = vEBP->velocity >> 1;
+                    vEBP->velocity = vEDI->velocity >> 1;
+                }
+                _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_2;
+                goto loc_6DC99A;
             }
         }
     }
@@ -9168,26 +9185,6 @@ loc_6DCD2B:
     acceleration += dword_9A2970[vehicle_sprite_type];
     _vehicleUnkF64E10++;
     goto loc_6DCA9A;
-
-loc_6DCD6B:
-    _vehicleVelocityF64E0C -= remaining_distance - 0x368A;
-    remaining_distance = 0x368A;
-    {
-        Vehicle* vEBP = GET_VEHICLE(otherVehicleIndex);
-        Vehicle* vEDI = gCurrentVehicle;
-        regs.eax = abs(vEDI->velocity - vEBP->velocity);
-        if (regs.eax > 0xE0000)
-        {
-            if (!(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_BOAT_HIRE_COLLISION_DETECTION))
-            {
-                _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_VEHICLE_COLLISION;
-            }
-        }
-        vEDI->velocity = vEBP->velocity >> 1;
-        vEBP->velocity = vEDI->velocity >> 1;
-    }
-    _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_2;
-    goto loc_6DC99A;
 
 loc_6DCE02:
     acceleration /= _vehicleUnkF64E10;
