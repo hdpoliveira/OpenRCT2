@@ -8984,7 +8984,7 @@ bool Vehicle::UpdateTrackMotionMiniGolfVehicleLoc6DC462(Ride* curRide, rct_ride_
     return true;
 }
 
-void Vehicle::UpdateTrackMotionMiniGolfVehicle(
+void Vehicle::UpdateTrackMotionMiniGolfVehicleAdjustRemainingDistance(
     Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry, registers& regs)
 {
     _vehicleUnkF64E10 = 1;
@@ -8992,7 +8992,7 @@ void Vehicle::UpdateTrackMotionMiniGolfVehicle(
     remaining_distance = _vehicleVelocityF64E0C + remaining_distance;
     if (remaining_distance >= 0 && remaining_distance < 0x368A)
     {
-        goto loc_6DCE02;
+        return;
     }
     sound2_flags &= ~VEHICLE_SOUND2_FLAGS_LIFT_HILL;
     unk_F64E20.x = x;
@@ -9011,7 +9011,7 @@ loc_6DC99A:
     {
         MoveTo(unk_F64E20);
         Invalidate();
-        goto loc_6DCE02;
+        return;
     }
     acceleration = dword_9A2970[vehicle_sprite_type];
     _vehicleUnkF64E10++;
@@ -9155,8 +9155,12 @@ loc_6DCA9A:
     }
     MoveTo(unk_F64E20);
     Invalidate();
+}
 
-loc_6DCE02:
+void Vehicle::UpdateTrackMotionMiniGolfVehicle(
+    Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry, registers& regs)
+{
+    UpdateTrackMotionMiniGolfVehicleAdjustRemainingDistance(curRide, rideEntry, vehicleEntry, regs);
     acceleration /= _vehicleUnkF64E10;
     if (TrackSubposition == VEHICLE_TRACK_SUBPOSITION_CHAIRLIFT_GOING_BACK)
     {

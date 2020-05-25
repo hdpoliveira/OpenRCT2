@@ -409,6 +409,8 @@ private:
     int32_t UpdateTrackMotionMiniGolf(int32_t* outStation);
     void UpdateTrackMotionMiniGolfVehicle(
         Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry, registers& regs);
+    void UpdateTrackMotionMiniGolfVehicleAdjustRemainingDistance(
+        Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry, registers& regs);
     void UpdateTrackMotionMiniGolfVehicleLoc6DC743(Ride* curRide, rct_ride_entry* rideEntry);
     bool UpdateTrackMotionMiniGolfVehicleLoc6DC462(Ride* curRide, rct_ride_entry* rideEntry);
     void UpdateTrackMotionMiniGolfReduceRemainingDistance();
