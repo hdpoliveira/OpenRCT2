@@ -8721,14 +8721,12 @@ void Vehicle::UpdateTrackMotionMiniGolfVehicle(
         goto loc_6DCA9A;
 
 loc_6DC462:
-    if (var_D3 == 0)
+    if (var_D3 != 0)
     {
-        goto loc_6DC476;
+        var_D3--;
+        goto loc_6DC985;
     }
-    var_D3--;
-    goto loc_6DC985;
 
-loc_6DC476:
     if (mini_golf_flags & (1 << 2))
     {
         uint8_t nextFrame = animation_frame + 1;
@@ -9176,15 +9174,14 @@ loc_6DCA9A:
     }
 
 loc_6DCD2B:
-    if (remaining_distance >= 0)
+    if (remaining_distance < 0)
     {
-        MoveTo(unk_F64E20);
-        Invalidate();
-        goto loc_6DCE02;
+        acceleration += dword_9A2970[vehicle_sprite_type];
+        _vehicleUnkF64E10++;
+        goto loc_6DCA9A;
     }
-    acceleration += dword_9A2970[vehicle_sprite_type];
-    _vehicleUnkF64E10++;
-    goto loc_6DCA9A;
+    MoveTo(unk_F64E20);
+    Invalidate();
 
 loc_6DCE02:
     acceleration /= _vehicleUnkF64E10;
