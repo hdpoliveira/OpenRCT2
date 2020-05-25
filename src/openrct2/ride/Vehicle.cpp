@@ -9067,7 +9067,11 @@ loc_6DCA9A:
 
     if (!loc_6DB38B(this, tileElement))
     {
-        goto loc_6DCD4A;
+        _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
+        _vehicleVelocityF64E0C -= remaining_distance - 0x368A;
+        remaining_distance = 0x368A;
+        regs.ebx = vehicle_sprite_type;
+        goto loc_6DC99A;
     }
 
     {
@@ -9167,13 +9171,6 @@ loc_6DCD2B:
     acceleration += dword_9A2970[vehicle_sprite_type];
     _vehicleUnkF64E10++;
     goto loc_6DCA9A;
-
-loc_6DCD4A:
-    _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
-    _vehicleVelocityF64E0C -= remaining_distance - 0x368A;
-    remaining_distance = 0x368A;
-    regs.ebx = vehicle_sprite_type;
-    goto loc_6DC99A;
 
 loc_6DCD6B:
     _vehicleVelocityF64E0C -= remaining_distance - 0x368A;
