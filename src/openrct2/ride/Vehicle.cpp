@@ -8836,7 +8836,6 @@ void Vehicle::UpdateTrackMotionMiniGolfVehicle(
 {
     TileElement* tileElement = nullptr;
 
-    regs.ebx = vehicle_sprite_type;
     _vehicleUnkF64E10 = 1;
     acceleration = dword_9A2970[vehicle_sprite_type];
     remaining_distance = _vehicleVelocityF64E0C + remaining_distance;
@@ -9006,7 +9005,6 @@ loc_6DC462:
     goto loc_6DC99A;
 
 loc_6DC985:
-    regs.ebx = 0;
     remaining_distance -= 0x368A;
     if (remaining_distance < 0)
     {
@@ -9057,7 +9055,6 @@ loc_6DCA9A:
             _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
             _vehicleVelocityF64E0C -= remaining_distance - 0x368A;
             remaining_distance = 0x368A;
-            regs.ebx = vehicle_sprite_type;
             goto loc_6DC99A;
         }
 
@@ -9100,22 +9097,7 @@ loc_6DCA9A:
     trackPos = { TrackLocation.x + moveInfo->x, TrackLocation.y + moveInfo->y,
                  TrackLocation.z + moveInfo->z + RideData5[curRide->type].z_offset };
 
-    // Investigate redundant code
-    regs.ebx = 0;
-    if (regs.ax != unk_F64E20.x)
-    {
-        regs.ebx |= 1;
-    }
-    if (regs.cx == unk_F64E20.y)
-    {
-        regs.ebx |= 2;
-    }
-    if (regs.dx == unk_F64E20.z)
-    {
-        regs.ebx |= 4;
-    }
-    regs.ebx = 0x368A;
-    remaining_distance -= regs.ebx;
+    remaining_distance -= 0x368A;
     if (remaining_distance < 0)
     {
         remaining_distance = 0;
