@@ -9044,69 +9044,66 @@ loc_6DCA9A:
     regs.ax = track_progress - 1;
     if (static_cast<uint16_t>(regs.ax) != 0xFFFF)
     {
-        goto loc_6DCC2C;
-    }
-
-    {
-        uint16_t trackType = track_type >> 2;
-        _vehicleVAngleEndF64E36 = TrackDefinitions[trackType].vangle_end;
-        _vehicleBankEndF64E37 = TrackDefinitions[trackType].bank_end;
-
-        tileElement = map_get_track_element_at_of_type_seq(TrackLocation, trackType, 0);
-    }
-    {
-        track_begin_end trackBeginEnd;
-        if (!track_block_get_previous({ TrackLocation, tileElement }, &trackBeginEnd))
         {
-            goto loc_6DC9BC;
+            uint16_t trackType = track_type >> 2;
+            _vehicleVAngleEndF64E36 = TrackDefinitions[trackType].vangle_end;
+            _vehicleBankEndF64E37 = TrackDefinitions[trackType].bank_end;
+
+            tileElement = map_get_track_element_at_of_type_seq(TrackLocation, trackType, 0);
         }
-        trackPos = { trackBeginEnd.begin_x, trackBeginEnd.begin_y, trackBeginEnd.begin_z };
-        direction = trackBeginEnd.begin_direction;
-        tileElement = trackBeginEnd.begin_element;
-    }
-
-    if (!loc_6DB38B(this, tileElement))
-    {
-        _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
-        _vehicleVelocityF64E0C -= remaining_distance - 0x368A;
-        remaining_distance = 0x368A;
-        regs.ebx = vehicle_sprite_type;
-        goto loc_6DC99A;
-    }
-
-    {
-        int32_t rideType = get_ride(tileElement->AsTrack()->GetRideIndex())->type;
-        update_flags &= ~VEHICLE_UPDATE_FLAG_USE_INVERTED_SPRITES;
-        if (RideTypeDescriptors[rideType].Flags & RIDE_TYPE_FLAG_HAS_ALTERNATIVE_TRACK_TYPE)
         {
-            if (tileElement->AsTrack()->IsInverted())
+            track_begin_end trackBeginEnd;
+            if (!track_block_get_previous({ TrackLocation, tileElement }, &trackBeginEnd))
             {
-                update_flags |= VEHICLE_UPDATE_FLAG_USE_INVERTED_SPRITES;
+                goto loc_6DC9BC;
+            }
+            trackPos = { trackBeginEnd.begin_x, trackBeginEnd.begin_y, trackBeginEnd.begin_z };
+            direction = trackBeginEnd.begin_direction;
+            tileElement = trackBeginEnd.begin_element;
+        }
+
+        if (!loc_6DB38B(this, tileElement))
+        {
+            _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
+            _vehicleVelocityF64E0C -= remaining_distance - 0x368A;
+            remaining_distance = 0x368A;
+            regs.ebx = vehicle_sprite_type;
+            goto loc_6DC99A;
+        }
+
+        {
+            int32_t rideType = get_ride(tileElement->AsTrack()->GetRideIndex())->type;
+            update_flags &= ~VEHICLE_UPDATE_FLAG_USE_INVERTED_SPRITES;
+            if (RideTypeDescriptors[rideType].Flags & RIDE_TYPE_FLAG_HAS_ALTERNATIVE_TRACK_TYPE)
+            {
+                if (tileElement->AsTrack()->IsInverted())
+                {
+                    update_flags |= VEHICLE_UPDATE_FLAG_USE_INVERTED_SPRITES;
+                }
             }
         }
-    }
 
-    TrackLocation = trackPos;
+        TrackLocation = trackPos;
 
-    if (UpdateFlag(VEHICLE_UPDATE_FLAG_ON_LIFT_HILL))
-    {
-        update_flags &= ~VEHICLE_UPDATE_FLAG_ON_LIFT_HILL;
-        if (next_vehicle_on_train == SPRITE_INDEX_NULL)
+        if (UpdateFlag(VEHICLE_UPDATE_FLAG_ON_LIFT_HILL))
         {
-            if (_vehicleVelocityF64E08 < 0)
+            update_flags &= ~VEHICLE_UPDATE_FLAG_ON_LIFT_HILL;
+            if (next_vehicle_on_train == SPRITE_INDEX_NULL)
             {
-                _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_8;
+                if (_vehicleVelocityF64E08 < 0)
+                {
+                    _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_8;
+                }
             }
         }
+
+        track_type = (tileElement->AsTrack()->GetTrackType() << 2) | (direction & 3);
+        var_CF = tileElement->AsTrack()->GetSeatRotation() << 1;
+
+        // There are two bytes before the move info list
+        regs.ax = vehicle_get_move_info_size(TrackSubposition, track_type);
     }
 
-    track_type = (tileElement->AsTrack()->GetTrackType() << 2) | (direction & 3);
-    var_CF = tileElement->AsTrack()->GetSeatRotation() << 1;
-
-    // There are two bytes before the move info list
-    regs.ax = vehicle_get_move_info_size(TrackSubposition, track_type);
-
-loc_6DCC2C:
     track_progress = regs.ax;
 
     moveInfo = vehicle_get_move_info(TrackSubposition, track_type, track_progress);
