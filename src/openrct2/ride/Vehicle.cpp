@@ -9021,7 +9021,9 @@ loc_6DC9BC:
     _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
     _vehicleVelocityF64E0C -= remaining_distance + 1;
     remaining_distance = -1;
-    goto loc_6DCD2B;
+    acceleration += dword_9A2970[vehicle_sprite_type];
+    _vehicleUnkF64E10++;
+    goto loc_6DCA9A;
 
 loc_6DCA9A:
     regs.ax = track_progress - 1;
@@ -9138,7 +9140,6 @@ loc_6DCA9A:
         }
     }
 
-loc_6DCD2B:
     if (remaining_distance < 0)
     {
         acceleration += dword_9A2970[vehicle_sprite_type];
