@@ -8697,12 +8697,144 @@ loc_6DBE7F:
  *
  *
  */
+void Vehicle::UpdateTrackMotionMiniGolfVehicleLoc6DC743(Ride* curRide, rct_ride_entry* rideEntry)
+{
+    if (!IsHead())
+    {
+        animation_frame++;
+        if (animation_frame >= 6)
+        {
+            animation_frame = 0;
+        }
+    }
+    const rct_vehicle_info* moveInfo;
+    for (;;)
+    {
+        moveInfo = vehicle_get_move_info(TrackSubposition, track_type, track_progress);
+        if (moveInfo->x != LOCATION_NULL)
+        {
+            break;
+        }
+        switch (moveInfo->y)
+        {
+            case 0: // loc_6DC7B4
+                if (!IsHead())
+                {
+                    mini_golf_flags |= (1 << 3);
+                }
+                else
+                {
+                    uint16_t rand16 = scenario_rand() & 0xFFFF;
+                    uint8_t trackSubposition = VEHICLE_TRACK_SUBPOSITION_MINI_GOLF_BALL_PATH_C_14;
+                    if (rand16 <= 0xA000)
+                    {
+                        trackSubposition = VEHICLE_TRACK_SUBPOSITION_MINI_GOLF_BALL_PATH_B_12;
+                        if (rand16 <= 0x900)
+                        {
+                            trackSubposition = VEHICLE_TRACK_SUBPOSITION_MINI_GOLF_BALL_PATH_A_10;
+                        }
+                    }
+                    TrackSubposition = trackSubposition;
+                }
+                track_progress++;
+                break;
+            case 1: // loc_6DC7ED
+                var_D3 = static_cast<uint8_t>(moveInfo->z);
+                track_progress++;
+                break;
+            case 2: // loc_6DC800
+                mini_golf_flags |= (1 << 0);
+                track_progress++;
+                break;
+            case 3: // loc_6DC810
+                mini_golf_flags |= (1 << 1);
+                track_progress++;
+                break;
+            case 4: // loc_6DC820
+            {
+                int16_t curZ = moveInfo->z;
+                // When the ride is closed occasionally the peep is removed
+                // but the vehicle is still on the track. This will prevent
+                // it from crashing in that situation.
+                if (peep[0] != SPRITE_INDEX_NULL)
+                {
+                    if (curZ == 2)
+                    {
+                        Peep* curPeep = GET_PEEP(peep[0]);
+                        if (curPeep->id & 7)
+                        {
+                            curZ = 7;
+                        }
+                    }
+                    if (curZ == 6)
+                    {
+                        Peep* curPeep = GET_PEEP(peep[0]);
+                        if (curPeep->id & 7)
+                        {
+                            curZ = 8;
+                        }
+                    }
+                }
+                mini_golf_current_animation = static_cast<uint8_t>(curZ);
+                animation_frame = 0;
+                track_progress++;
+                break;
+            }
+            case 5: // loc_6DC87A
+                mini_golf_flags |= (1 << 2);
+                track_progress++;
+                break;
+            case 6: // loc_6DC88A
+                mini_golf_flags &= ~(1 << 4);
+                mini_golf_flags |= (1 << 5);
+                track_progress++;
+                break;
+            default:
+                log_error("Invalid move info...");
+                assert(false);
+                break;
+        }
+    }
+
+    // loc_6DC8A1
+    CoordsXYZ trackPos = { TrackLocation.x + moveInfo->x, TrackLocation.y + moveInfo->y,
+                           TrackLocation.z + moveInfo->z + RideData5[curRide->type].z_offset };
+
+    remaining_distance -= 0x368A;
+    if (remaining_distance < 0)
+    {
+        remaining_distance = 0;
+    }
+
+    unk_F64E20 = trackPos;
+    sprite_direction = moveInfo->direction;
+    bank_rotation = moveInfo->bank_rotation;
+    vehicle_sprite_type = moveInfo->vehicle_sprite_type;
+
+    if (rideEntry->vehicles[0].flags & VEHICLE_ENTRY_FLAG_25)
+    {
+        if (vehicle_sprite_type != 0)
+        {
+            SwingSprite = 0;
+            SwingPosition = 0;
+            SwingSpeed = 0;
+        }
+    }
+
+    if (this == _vehicleFrontVehicle)
+    {
+        if (_vehicleVelocityF64E08 >= 0)
+        {
+            uint16_t otherVehicleIndex = prev_vehicle_on_ride;
+            vehicle_update_motion_collision_detection(this, trackPos.x, trackPos.y, trackPos.z, &otherVehicleIndex);
+        }
+    }
+}
+
 void Vehicle::UpdateTrackMotionMiniGolfVehicle(
     Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry, registers& regs)
 {
-    uint16_t otherVehicleIndex = SPRITE_INDEX_NULL;
     TileElement* tileElement = nullptr;
-    CoordsXYZ trackPos;
 
     regs.ebx = vehicle_sprite_type;
     _vehicleUnkF64E10 = 1;
@@ -8807,7 +8939,9 @@ loc_6DC462:
         if (unk16_v34 < unk16)
         {
             regs.ax = unk16_v34;
-            goto loc_6DC743;
+            track_progress = regs.ax;
+            UpdateTrackMotionMiniGolfVehicleLoc6DC743(curRide, rideEntry);
+            goto loc_6DC99A;
         }
     }
 
@@ -8817,6 +8951,7 @@ loc_6DC462:
         _vehicleBankEndF64E37 = TrackDefinitions[trackType].bank_end;
         tileElement = map_get_track_element_at_of_type_seq(TrackLocation, trackType, 0);
     }
+    CoordsXYZ trackPos;
     int32_t direction;
     {
         CoordsXYE output;
@@ -8866,151 +9001,8 @@ loc_6DC462:
     var_CF = tileElement->AsTrack()->GetBrakeBoosterSpeed();
     regs.ax = 0;
 
-loc_6DC743:
     track_progress = regs.ax;
-    if (!IsHead())
-    {
-        animation_frame++;
-        if (animation_frame >= 6)
-        {
-            animation_frame = 0;
-        }
-    }
-    const rct_vehicle_info* moveInfo;
-    for (;;)
-    {
-        moveInfo = vehicle_get_move_info(TrackSubposition, track_type, track_progress);
-        if (moveInfo->x != LOCATION_NULL)
-        {
-            break;
-        }
-        switch (moveInfo->y)
-        {
-            case 0: // loc_6DC7B4
-                if (!IsHead())
-                {
-                    mini_golf_flags |= (1 << 3);
-                }
-                else
-                {
-                    uint16_t rand16 = scenario_rand() & 0xFFFF;
-                    regs.bl = VEHICLE_TRACK_SUBPOSITION_MINI_GOLF_BALL_PATH_C_14;
-                    if (rand16 <= 0xA000)
-                    {
-                        regs.bl = VEHICLE_TRACK_SUBPOSITION_MINI_GOLF_BALL_PATH_B_12;
-                        if (rand16 <= 0x900)
-                        {
-                            regs.bl = VEHICLE_TRACK_SUBPOSITION_MINI_GOLF_BALL_PATH_A_10;
-                        }
-                    }
-                    TrackSubposition = regs.bl;
-                }
-                track_progress++;
-                break;
-            case 1: // loc_6DC7ED
-                var_D3 = static_cast<uint8_t>(moveInfo->z);
-                track_progress++;
-                break;
-            case 2: // loc_6DC800
-                mini_golf_flags |= (1 << 0);
-                track_progress++;
-                break;
-            case 3: // loc_6DC810
-                mini_golf_flags |= (1 << 1);
-                track_progress++;
-                break;
-            case 4: // loc_6DC820
-                trackPos.z = moveInfo->z;
-                // When the ride is closed occasionally the peep is removed
-                // but the vehicle is still on the track. This will prevent
-                // it from crashing in that situation.
-                if (peep[0] != SPRITE_INDEX_NULL)
-                {
-                    if (trackPos.z == 2)
-                    {
-                        Peep* curPeep = GET_PEEP(peep[0]);
-                        if (curPeep->id & 7)
-                        {
-                            trackPos.z = 7;
-                        }
-                    }
-                    if (trackPos.z == 6)
-                    {
-                        Peep* curPeep = GET_PEEP(peep[0]);
-                        if (curPeep->id & 7)
-                        {
-                            trackPos.z = 8;
-                        }
-                    }
-                }
-                mini_golf_current_animation = static_cast<uint8_t>(trackPos.z);
-                animation_frame = 0;
-                track_progress++;
-                break;
-            case 5: // loc_6DC87A
-                mini_golf_flags |= (1 << 2);
-                track_progress++;
-                break;
-            case 6: // loc_6DC88A
-                mini_golf_flags &= ~(1 << 4);
-                mini_golf_flags |= (1 << 5);
-                track_progress++;
-                break;
-            default:
-                log_error("Invalid move info...");
-                assert(false);
-                break;
-        }
-    }
-
-    // loc_6DC8A1
-    trackPos = { TrackLocation.x + moveInfo->x, TrackLocation.y + moveInfo->y,
-                 TrackLocation.z + moveInfo->z + RideData5[curRide->type].z_offset };
-
-    // Investigate redundant code
-    regs.ebx = 0;
-    if (regs.ax != unk_F64E20.x)
-    {
-        regs.ebx |= 1;
-    }
-    if (regs.cx == unk_F64E20.y)
-    {
-        regs.ebx |= 2;
-    }
-    if (regs.dx == unk_F64E20.z)
-    {
-        regs.ebx |= 4;
-    }
-    regs.ebx = 0x368A;
-    remaining_distance -= regs.ebx;
-    if (remaining_distance < 0)
-    {
-        remaining_distance = 0;
-    }
-
-    unk_F64E20 = trackPos;
-    sprite_direction = moveInfo->direction;
-    bank_rotation = moveInfo->bank_rotation;
-    vehicle_sprite_type = moveInfo->vehicle_sprite_type;
-
-    if (rideEntry->vehicles[0].flags & VEHICLE_ENTRY_FLAG_25)
-    {
-        if (vehicle_sprite_type != 0)
-        {
-            SwingSprite = 0;
-            SwingPosition = 0;
-            SwingSpeed = 0;
-        }
-    }
-
-    if (this == _vehicleFrontVehicle)
-    {
-        if (_vehicleVelocityF64E08 >= 0)
-        {
-            otherVehicleIndex = prev_vehicle_on_ride;
-            vehicle_update_motion_collision_detection(this, trackPos.x, trackPos.y, trackPos.z, &otherVehicleIndex);
-        }
-    }
+    UpdateTrackMotionMiniGolfVehicleLoc6DC743(curRide, rideEntry);
     goto loc_6DC99A;
 
 loc_6DC985:
@@ -9104,7 +9096,7 @@ loc_6DCA9A:
 
     track_progress = regs.ax;
 
-    moveInfo = vehicle_get_move_info(TrackSubposition, track_type, track_progress);
+    const rct_vehicle_info* moveInfo = vehicle_get_move_info(TrackSubposition, track_type, track_progress);
     trackPos = { TrackLocation.x + moveInfo->x, TrackLocation.y + moveInfo->y,
                  TrackLocation.z + moveInfo->z + RideData5[curRide->type].z_offset };
 
@@ -9148,7 +9140,7 @@ loc_6DCA9A:
     {
         if (_vehicleVelocityF64E08 >= 0)
         {
-            otherVehicleIndex = var_44;
+            uint16_t otherVehicleIndex = var_44;
             if (vehicle_update_motion_collision_detection(this, trackPos.x, trackPos.y, trackPos.z, &otherVehicleIndex))
             {
                 _vehicleVelocityF64E0C -= remaining_distance - 0x368A;
