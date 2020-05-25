@@ -8800,11 +8800,7 @@ void Vehicle::UpdateTrackMotionMiniGolfVehicleLoc6DC743(Ride* curRide, rct_ride_
     CoordsXYZ trackPos = { TrackLocation.x + moveInfo->x, TrackLocation.y + moveInfo->y,
                            TrackLocation.z + moveInfo->z + RideData5[curRide->type].z_offset };
 
-    remaining_distance -= 0x368A;
-    if (remaining_distance < 0)
-    {
-        remaining_distance = 0;
-    }
+    UpdateTrackMotionMiniGolfReduceRemainingDistance();
 
     unk_F64E20 = trackPos;
     sprite_direction = moveInfo->direction;
@@ -8855,7 +8851,8 @@ loc_6DC462:
     if (var_D3 != 0)
     {
         var_D3--;
-        goto loc_6DC985;
+        UpdateTrackMotionMiniGolfReduceRemainingDistance();
+        goto loc_6DC99A;
     }
 
     if (mini_golf_flags & (1 << 2))
@@ -8864,7 +8861,8 @@ loc_6DC462:
         if (nextFrame < mini_golf_peep_animation_lengths[mini_golf_current_animation])
         {
             animation_frame = nextFrame;
-            goto loc_6DC985;
+            UpdateTrackMotionMiniGolfReduceRemainingDistance();
+            goto loc_6DC99A;
         }
         mini_golf_flags &= ~(1 << 2);
     }
@@ -8875,11 +8873,13 @@ loc_6DC462:
         Vehicle* vEDI = GET_VEHICLE(regs.di);
         if (!(vEDI->mini_golf_flags & (1 << 0)) || (vEDI->mini_golf_flags & (1 << 2)))
         {
-            goto loc_6DC985;
+            UpdateTrackMotionMiniGolfReduceRemainingDistance();
+            goto loc_6DC99A;
         }
         if (vEDI->var_D3 != 0)
         {
-            goto loc_6DC985;
+            UpdateTrackMotionMiniGolfReduceRemainingDistance();
+            goto loc_6DC99A;
         }
         vEDI->mini_golf_flags &= ~(1 << 0);
         mini_golf_flags &= ~(1 << 0);
@@ -8891,11 +8891,13 @@ loc_6DC462:
         Vehicle* vEDI = GET_VEHICLE(regs.di);
         if (!(vEDI->mini_golf_flags & (1 << 1)) || (vEDI->mini_golf_flags & (1 << 2)))
         {
-            goto loc_6DC985;
+            UpdateTrackMotionMiniGolfReduceRemainingDistance();
+            goto loc_6DC99A;
         }
         if (vEDI->var_D3 != 0)
         {
-            goto loc_6DC985;
+            UpdateTrackMotionMiniGolfReduceRemainingDistance();
+            goto loc_6DC99A;
         }
         vEDI->mini_golf_flags &= ~(1 << 1);
         mini_golf_flags &= ~(1 << 1);
@@ -8918,7 +8920,8 @@ loc_6DC462:
                 continue;
             if (vEDI->TrackLocation != TrackLocation)
                 continue;
-            goto loc_6DC985;
+            UpdateTrackMotionMiniGolfReduceRemainingDistance();
+            goto loc_6DC99A;
         }
 
         mini_golf_flags |= (1 << 4);
@@ -9002,14 +9005,6 @@ loc_6DC462:
 
     track_progress = regs.ax;
     UpdateTrackMotionMiniGolfVehicleLoc6DC743(curRide, rideEntry);
-    goto loc_6DC99A;
-
-loc_6DC985:
-    remaining_distance -= 0x368A;
-    if (remaining_distance < 0)
-    {
-        remaining_distance = 0;
-    }
 
 loc_6DC99A:
     if (remaining_distance < 0x368A)
@@ -9097,11 +9092,7 @@ loc_6DCA9A:
     trackPos = { TrackLocation.x + moveInfo->x, TrackLocation.y + moveInfo->y,
                  TrackLocation.z + moveInfo->z + RideData5[curRide->type].z_offset };
 
-    remaining_distance -= 0x368A;
-    if (remaining_distance < 0)
-    {
-        remaining_distance = 0;
-    }
+    UpdateTrackMotionMiniGolfReduceRemainingDistance();
 
     unk_F64E20 = trackPos;
     sprite_direction = moveInfo->direction;
@@ -9206,6 +9197,15 @@ loc_6DCE02:
             continue;
         }
         _vehicleStationIndex = i;
+    }
+}
+
+void Vehicle::UpdateTrackMotionMiniGolfReduceRemainingDistance()
+{
+    remaining_distance -= 0x368A;
+    if (remaining_distance < 0)
+    {
+        remaining_distance = 0;
     }
 }
 
