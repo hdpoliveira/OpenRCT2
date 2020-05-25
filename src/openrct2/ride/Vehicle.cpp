@@ -8827,32 +8827,13 @@ void Vehicle::UpdateTrackMotionMiniGolfVehicleLoc6DC743(Ride* curRide, rct_ride_
     }
 }
 
-void Vehicle::UpdateTrackMotionMiniGolfVehicle(
-    Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry, registers& regs)
+bool Vehicle::UpdateTrackMotionMiniGolfVehicleLoc6DC462(Ride* curRide, rct_ride_entry* rideEntry)
 {
-    TileElement* tileElement = nullptr;
-
-    _vehicleUnkF64E10 = 1;
-    acceleration = dword_9A2970[vehicle_sprite_type];
-    remaining_distance = _vehicleVelocityF64E0C + remaining_distance;
-    if (remaining_distance >= 0 && remaining_distance < 0x368A)
-    {
-        goto loc_6DCE02;
-    }
-    sound2_flags &= ~VEHICLE_SOUND2_FLAGS_LIFT_HILL;
-    unk_F64E20.x = x;
-    unk_F64E20.y = y;
-    unk_F64E20.z = z;
-    Invalidate();
-    if (remaining_distance < 0)
-        goto loc_6DCA9A;
-
-loc_6DC462:
     if (var_D3 != 0)
     {
         var_D3--;
         UpdateTrackMotionMiniGolfReduceRemainingDistance();
-        goto loc_6DC99A;
+        return true;
     }
 
     if (mini_golf_flags & (1 << 2))
@@ -8862,24 +8843,23 @@ loc_6DC462:
         {
             animation_frame = nextFrame;
             UpdateTrackMotionMiniGolfReduceRemainingDistance();
-            goto loc_6DC99A;
+            return true;
         }
         mini_golf_flags &= ~(1 << 2);
     }
 
     if (mini_golf_flags & (1 << 0))
     {
-        regs.di = IsHead() ? next_vehicle_on_ride : prev_vehicle_on_ride;
-        Vehicle* vEDI = GET_VEHICLE(regs.di);
+        Vehicle* vEDI = GET_VEHICLE(IsHead() ? next_vehicle_on_ride : prev_vehicle_on_ride);
         if (!(vEDI->mini_golf_flags & (1 << 0)) || (vEDI->mini_golf_flags & (1 << 2)))
         {
             UpdateTrackMotionMiniGolfReduceRemainingDistance();
-            goto loc_6DC99A;
+            return true;
         }
         if (vEDI->var_D3 != 0)
         {
             UpdateTrackMotionMiniGolfReduceRemainingDistance();
-            goto loc_6DC99A;
+            return true;
         }
         vEDI->mini_golf_flags &= ~(1 << 0);
         mini_golf_flags &= ~(1 << 0);
@@ -8887,17 +8867,16 @@ loc_6DC462:
 
     if (mini_golf_flags & (1 << 1))
     {
-        regs.di = IsHead() ? next_vehicle_on_ride : prev_vehicle_on_ride;
-        Vehicle* vEDI = GET_VEHICLE(regs.di);
+        Vehicle* vEDI = GET_VEHICLE(IsHead() ? next_vehicle_on_ride : prev_vehicle_on_ride);
         if (!(vEDI->mini_golf_flags & (1 << 1)) || (vEDI->mini_golf_flags & (1 << 2)))
         {
             UpdateTrackMotionMiniGolfReduceRemainingDistance();
-            goto loc_6DC99A;
+            return true;
         }
         if (vEDI->var_D3 != 0)
         {
             UpdateTrackMotionMiniGolfReduceRemainingDistance();
-            goto loc_6DC99A;
+            return true;
         }
         vEDI->mini_golf_flags &= ~(1 << 1);
         mini_golf_flags &= ~(1 << 1);
@@ -8921,7 +8900,7 @@ loc_6DC462:
             if (vEDI->TrackLocation != TrackLocation)
                 continue;
             UpdateTrackMotionMiniGolfReduceRemainingDistance();
-            goto loc_6DC99A;
+            return true;
         }
 
         mini_golf_flags |= (1 << 4);
@@ -8936,17 +8915,15 @@ loc_6DC462:
 
     // There are two bytes before the move info list
     {
-        uint16_t unk16_v34 = track_progress + 1;
-        uint16_t unk16 = vehicle_get_move_info_size(TrackSubposition, track_type);
-        if (unk16_v34 < unk16)
+        if (track_progress + 1 < vehicle_get_move_info_size(TrackSubposition, track_type))
         {
-            regs.ax = unk16_v34;
-            track_progress = regs.ax;
+            track_progress += 1;
             UpdateTrackMotionMiniGolfVehicleLoc6DC743(curRide, rideEntry);
-            goto loc_6DC99A;
+            return true;
         }
     }
 
+    TileElement* tileElement = nullptr;
     {
         uint16_t trackType = track_type >> 2;
         _vehicleVAngleEndF64E36 = TrackDefinitions[trackType].vangle_end;
@@ -8961,7 +8938,7 @@ loc_6DC462:
         CoordsXYE input = { TrackLocation, tileElement };
         if (!track_block_get_next(&input, &output, &outZ, &outDirection))
         {
-            goto loc_6DC9BC;
+            return false;
         }
         tileElement = output.element;
         trackPos = { output.x, output.y, outZ };
@@ -8970,7 +8947,7 @@ loc_6DC462:
 
     if (!loc_6DB38B(this, tileElement))
     {
-        goto loc_6DC9BC;
+        return false;
     }
 
     {
@@ -8990,21 +8967,44 @@ loc_6DC462:
     if (!IsHead())
     {
         Vehicle* prevVehicle = GET_VEHICLE(prev_vehicle_on_ride);
-        regs.al = prevVehicle->TrackSubposition;
-        if (regs.al != VEHICLE_TRACK_SUBPOSITION_MINI_GOLF_START_9)
+        uint8_t trackSubposition = prevVehicle->TrackSubposition;
+        if (trackSubposition != VEHICLE_TRACK_SUBPOSITION_MINI_GOLF_START_9)
         {
-            regs.al--;
+            trackSubposition--;
         }
-        TrackSubposition = regs.al;
+        TrackSubposition = trackSubposition;
     }
 
     update_flags &= ~VEHICLE_UPDATE_FLAG_ON_LIFT_HILL;
     track_type = (tileElement->AsTrack()->GetTrackType() << 2) | (direction & 3);
     var_CF = tileElement->AsTrack()->GetBrakeBoosterSpeed();
-    regs.ax = 0;
 
-    track_progress = regs.ax;
+    track_progress = 0;
     UpdateTrackMotionMiniGolfVehicleLoc6DC743(curRide, rideEntry);
+    return true;
+}
+
+void Vehicle::UpdateTrackMotionMiniGolfVehicle(
+    Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry, registers& regs)
+{
+    _vehicleUnkF64E10 = 1;
+    acceleration = dword_9A2970[vehicle_sprite_type];
+    remaining_distance = _vehicleVelocityF64E0C + remaining_distance;
+    if (remaining_distance >= 0 && remaining_distance < 0x368A)
+    {
+        goto loc_6DCE02;
+    }
+    sound2_flags &= ~VEHICLE_SOUND2_FLAGS_LIFT_HILL;
+    unk_F64E20.x = x;
+    unk_F64E20.y = y;
+    unk_F64E20.z = z;
+    Invalidate();
+    if (remaining_distance < 0)
+        goto loc_6DCA9A;
+
+loc_6DC462:
+    if (!UpdateTrackMotionMiniGolfVehicleLoc6DC462(curRide, rideEntry))
+        goto loc_6DC9BC;
 
 loc_6DC99A:
     if (remaining_distance < 0x368A)
@@ -9029,6 +9029,7 @@ loc_6DCA9A:
     regs.ax = track_progress - 1;
     if (static_cast<uint16_t>(regs.ax) != 0xFFFF)
     {
+        TileElement* tileElement = nullptr;
         {
             uint16_t trackType = track_type >> 2;
             _vehicleVAngleEndF64E36 = TrackDefinitions[trackType].vangle_end;
@@ -9036,6 +9037,8 @@ loc_6DCA9A:
 
             tileElement = map_get_track_element_at_of_type_seq(TrackLocation, trackType, 0);
         }
+        CoordsXYZ trackPos;
+        int32_t direction;
         {
             track_begin_end trackBeginEnd;
             if (!track_block_get_previous({ TrackLocation, tileElement }, &trackBeginEnd))
@@ -9052,7 +9055,9 @@ loc_6DCA9A:
             _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
             _vehicleVelocityF64E0C -= remaining_distance - 0x368A;
             remaining_distance = 0x368A;
-            goto loc_6DC99A;
+            acceleration = dword_9A2970[vehicle_sprite_type];
+            _vehicleUnkF64E10++;
+            goto loc_6DC462;
         }
 
         {
@@ -9091,8 +9096,8 @@ loc_6DCA9A:
     track_progress = regs.ax;
 
     const rct_vehicle_info* moveInfo = vehicle_get_move_info(TrackSubposition, track_type, track_progress);
-    trackPos = { TrackLocation.x + moveInfo->x, TrackLocation.y + moveInfo->y,
-                 TrackLocation.z + moveInfo->z + RideData5[curRide->type].z_offset };
+    CoordsXYZ trackPos = { TrackLocation.x + moveInfo->x, TrackLocation.y + moveInfo->y,
+                           TrackLocation.z + moveInfo->z + RideData5[curRide->type].z_offset };
 
     UpdateTrackMotionMiniGolfReduceRemainingDistance();
 
@@ -9135,7 +9140,9 @@ loc_6DCA9A:
                     vEBP->velocity = vEDI->velocity >> 1;
                 }
                 _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_2;
-                goto loc_6DC99A;
+                acceleration = dword_9A2970[vehicle_sprite_type];
+                _vehicleUnkF64E10++;
+                goto loc_6DC462;
             }
         }
     }
