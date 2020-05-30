@@ -9016,21 +9016,18 @@ void Vehicle::UpdateTrackMotionMiniGolfVehicleAdjustRemainingDistance(
         }
         else
         {
-            goto loc_6DC9BC;
+            _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
+            _vehicleVelocityF64E0C -= remaining_distance + 1;
+            remaining_distance = -1;
+            acceleration += dword_9A2970[vehicle_sprite_type];
+            _vehicleUnkF64E10++;
+            goto loc_6DCA9A;
         }
     }
     else
     {
         goto loc_6DCA9A;
     }
-
-loc_6DC9BC:
-    _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
-    _vehicleVelocityF64E0C -= remaining_distance + 1;
-    remaining_distance = -1;
-    acceleration += dword_9A2970[vehicle_sprite_type];
-    _vehicleUnkF64E10++;
-    goto loc_6DCA9A;
 
 loc_6DCA9A:
     if (track_progress > 0)
@@ -9053,7 +9050,12 @@ loc_6DCA9A:
             track_begin_end trackBeginEnd;
             if (!track_block_get_previous({ TrackLocation, tileElement }, &trackBeginEnd))
             {
-                goto loc_6DC9BC;
+                _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
+                _vehicleVelocityF64E0C -= remaining_distance + 1;
+                remaining_distance = -1;
+                acceleration += dword_9A2970[vehicle_sprite_type];
+                _vehicleUnkF64E10++;
+                goto loc_6DCA9A;
             }
             trackPos = { trackBeginEnd.begin_x, trackBeginEnd.begin_y, trackBeginEnd.begin_z };
             direction = trackBeginEnd.begin_direction;
