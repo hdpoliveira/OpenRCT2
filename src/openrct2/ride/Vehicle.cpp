@@ -8985,7 +8985,7 @@ bool Vehicle::UpdateTrackMotionMiniGolfVehicleLoc6DC462(Ride* curRide, rct_ride_
 }
 
 void Vehicle::UpdateTrackMotionMiniGolfVehicleAdjustRemainingDistance(
-    Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry, registers& regs)
+    Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry)
 {
     _vehicleUnkF64E10 = 1;
     acceleration = dword_9A2970[vehicle_sprite_type];
@@ -9164,10 +9164,9 @@ loc_6DCA9A:
     Invalidate();
 }
 
-void Vehicle::UpdateTrackMotionMiniGolfVehicle(
-    Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry, registers& regs)
+void Vehicle::UpdateTrackMotionMiniGolfVehicle(Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry)
 {
-    UpdateTrackMotionMiniGolfVehicleAdjustRemainingDistance(curRide, rideEntry, vehicleEntry, regs);
+    UpdateTrackMotionMiniGolfVehicleAdjustRemainingDistance(curRide, rideEntry, vehicleEntry);
     acceleration /= _vehicleUnkF64E10;
     if (TrackSubposition == VEHICLE_TRACK_SUBPOSITION_CHAIRLIFT_GOING_BACK)
     {
@@ -9189,7 +9188,6 @@ void Vehicle::UpdateTrackMotionMiniGolfVehicle(
     {
         return;
     }
-    regs.ax = track_progress;
     if (_vehicleVelocityF64E08 < 0)
     {
         if (track_progress > 11)
@@ -9197,7 +9195,6 @@ void Vehicle::UpdateTrackMotionMiniGolfVehicle(
             return;
         }
     }
-    regs.cx = 8;
     if (track_progress <= 8)
     {
         return;
@@ -9230,7 +9227,6 @@ void Vehicle::UpdateTrackMotionMiniGolfReduceRemainingDistance()
 
 int32_t Vehicle::UpdateTrackMotionMiniGolf(int32_t* outStation)
 {
-    registers regs = {};
     auto curRide = get_ride(ride);
     if (curRide == nullptr)
         return 0;
@@ -9247,7 +9243,7 @@ int32_t Vehicle::UpdateTrackMotionMiniGolf(int32_t* outStation)
 
     for (Vehicle* vehicle = _vehicleFrontVehicle;;)
     {
-        vehicle->UpdateTrackMotionMiniGolfVehicle(curRide, rideEntry, vehicleEntry, regs);
+        vehicle->UpdateTrackMotionMiniGolfVehicle(curRide, rideEntry, vehicleEntry);
         if (vehicle->UpdateFlag(VEHICLE_UPDATE_FLAG_ON_LIFT_HILL))
         {
             _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_VEHICLE_ON_LIFT_HILL;

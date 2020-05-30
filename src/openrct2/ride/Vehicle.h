@@ -407,10 +407,9 @@ private:
     void KillPassengers(Ride* curRide);
     void TrainReadyToDepart(uint8_t num_peeps_on_train, uint8_t num_used_seats);
     int32_t UpdateTrackMotionMiniGolf(int32_t* outStation);
-    void UpdateTrackMotionMiniGolfVehicle(
-        Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry, registers& regs);
+    void UpdateTrackMotionMiniGolfVehicle(Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry);
     void UpdateTrackMotionMiniGolfVehicleAdjustRemainingDistance(
-        Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry, registers& regs);
+        Ride* curRide, rct_ride_entry* rideEntry, rct_ride_entry_vehicle* vehicleEntry);
     void UpdateTrackMotionMiniGolfVehicleLoc6DC743(Ride* curRide, rct_ride_entry* rideEntry);
     bool UpdateTrackMotionMiniGolfVehicleLoc6DC462(Ride* curRide, rct_ride_entry* rideEntry);
     void UpdateTrackMotionMiniGolfReduceRemainingDistance();
