@@ -9136,8 +9136,7 @@ loc_6DCA9A:
                 {
                     Vehicle* vEBP = GET_VEHICLE(otherVehicleIndex);
                     Vehicle* vEDI = gCurrentVehicle;
-                    regs.eax = abs(vEDI->velocity - vEBP->velocity);
-                    if (regs.eax > 0xE0000)
+                    if (abs(vEDI->velocity - vEBP->velocity) > 0xE0000)
                     {
                         if (!(vehicleEntry->flags & VEHICLE_ENTRY_FLAG_BOAT_HIRE_COLLISION_DETECTION))
                         {
