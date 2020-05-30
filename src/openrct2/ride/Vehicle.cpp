@@ -9033,8 +9033,11 @@ loc_6DC9BC:
     goto loc_6DCA9A;
 
 loc_6DCA9A:
-    regs.ax = track_progress - 1;
-    if (static_cast<uint16_t>(regs.ax) != 0xFFFF)
+    if (track_progress > 0)
+    {
+        --track_progress;
+    }
+    else
     {
         TileElement* tileElement = nullptr;
         {
@@ -9097,10 +9100,8 @@ loc_6DCA9A:
         var_CF = tileElement->AsTrack()->GetSeatRotation() << 1;
 
         // There are two bytes before the move info list
-        regs.ax = vehicle_get_move_info_size(TrackSubposition, track_type);
+        track_progress = vehicle_get_move_info_size(TrackSubposition, track_type);
     }
-
-    track_progress = regs.ax;
 
     const rct_vehicle_info* moveInfo = vehicle_get_move_info(TrackSubposition, track_type, track_progress);
     CoordsXYZ trackPos = { TrackLocation.x + moveInfo->x, TrackLocation.y + moveInfo->y,
