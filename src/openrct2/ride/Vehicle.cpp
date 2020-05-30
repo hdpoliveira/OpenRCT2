@@ -8999,23 +8999,30 @@ void Vehicle::UpdateTrackMotionMiniGolfVehicleAdjustRemainingDistance(
     unk_F64E20.y = y;
     unk_F64E20.z = z;
     Invalidate();
-    if (remaining_distance < 0)
-        goto loc_6DCA9A;
-
-loc_6DC462:
-    if (!UpdateTrackMotionMiniGolfVehicleLoc6DC462(curRide, rideEntry))
-        goto loc_6DC9BC;
-
-loc_6DC99A:
-    if (remaining_distance < 0x368A)
+    if (remaining_distance >= 0x368A)
     {
-        MoveTo(unk_F64E20);
-        Invalidate();
-        return;
+    loc_6DC462:
+        if (UpdateTrackMotionMiniGolfVehicleLoc6DC462(curRide, rideEntry))
+        {
+            if (remaining_distance < 0x368A)
+            {
+                MoveTo(unk_F64E20);
+                Invalidate();
+                return;
+            }
+            acceleration = dword_9A2970[vehicle_sprite_type];
+            _vehicleUnkF64E10++;
+            goto loc_6DC462;
+        }
+        else
+        {
+            goto loc_6DC9BC;
+        }
     }
-    acceleration = dword_9A2970[vehicle_sprite_type];
-    _vehicleUnkF64E10++;
-    goto loc_6DC462;
+    else
+    {
+        goto loc_6DCA9A;
+    }
 
 loc_6DC9BC:
     _vehicleMotionTrackFlags |= VEHICLE_UPDATE_MOTION_TRACK_FLAG_5;
