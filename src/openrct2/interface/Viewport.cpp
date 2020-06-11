@@ -1684,9 +1684,9 @@ void get_map_coordinates_from_pos_window(
 }
 
 /**
- * Left, top, right and bottom represent 2D map coordinates at zoom 0.
+ * Box represents 2D map coordinates at zoom 0.
  */
-void viewport_invalidate(rct_viewport* viewport, int32_t left, int32_t top, int32_t right, int32_t bottom)
+void viewport_invalidate(rct_viewport* viewport, Box box)
 {
     // if unknown viewport visibility, use the containing window to discover the status
     if (viewport->visibility == VC_UNKNOWN)
@@ -1706,30 +1706,28 @@ void viewport_invalidate(rct_viewport* viewport, int32_t left, int32_t top, int3
     if (viewport->visibility == VC_COVERED)
         return;
 
-    int32_t viewportLeft = viewport->viewPos.x;
-    int32_t viewportTop = viewport->viewPos.y;
-    int32_t viewportRight = viewport->viewPos.x + viewport->view_width;
-    int32_t viewportBottom = viewport->viewPos.y + viewport->view_height;
-    if (right > viewportLeft && bottom > viewportTop)
+    const Box viewportBox = { viewport->viewPos.x, viewport->viewPos.y, viewport->viewPos.x + viewport->view_width,
+                              viewport->viewPos.y + viewport->view_height };
+    if (box.right > viewportBox.left && box.bottom > viewportBox.top)
     {
-        left = std::max(left, viewportLeft);
-        top = std::max(top, viewportTop);
-        right = std::min(right, viewportRight);
-        bottom = std::min(bottom, viewportBottom);
+        box.left = std::max(box.left, viewportBox.left);
+        box.top = std::max(box.top, viewportBox.top);
+        box.right = std::min(box.right, viewportBox.right);
+        box.bottom = std::min(box.bottom, viewportBox.bottom);
 
-        left -= viewportLeft;
-        top -= viewportTop;
-        right -= viewportLeft;
-        bottom -= viewportTop;
-        left = left / viewport->zoom;
-        top = top / viewport->zoom;
-        right = right / viewport->zoom;
-        bottom = bottom / viewport->zoom;
-        left += viewport->pos.x;
-        top += viewport->pos.y;
-        right += viewport->pos.x;
-        bottom += viewport->pos.y;
-        gfx_set_dirty_blocks(left, top, right, bottom);
+        box.left -= viewportBox.left;
+        box.top -= viewportBox.top;
+        box.right -= viewportBox.left;
+        box.bottom -= viewportBox.top;
+        box.left = box.left / viewport->zoom;
+        box.top = box.top / viewport->zoom;
+        box.right = box.right / viewport->zoom;
+        box.bottom = box.bottom / viewport->zoom;
+        box.left += viewport->pos.x;
+        box.top += viewport->pos.y;
+        box.right += viewport->pos.x;
+        box.bottom += viewport->pos.y;
+        gfx_set_dirty_blocks(box.left, box.top, box.right, box.bottom);
     }
 }
 

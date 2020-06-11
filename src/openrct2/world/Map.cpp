@@ -1063,7 +1063,7 @@ void map_invalidate_selection_rect()
         rct_viewport* viewport = &g_viewport_list[i];
         if (viewport->width != 0)
         {
-            viewport_invalidate(viewport, left, top, right, bottom);
+            viewport_invalidate(viewport, { left, top, right, bottom });
         }
     }
 }
@@ -2040,7 +2040,7 @@ static void map_invalidate_tile_under_zoom(int32_t x, int32_t y, int32_t z0, int
         rct_viewport* viewport = &g_viewport_list[i];
         if (viewport->width != 0 && (maxZoom == -1 || viewport->zoom <= maxZoom))
         {
-            viewport_invalidate(viewport, x1, y1, x2, y2);
+            viewport_invalidate(viewport, { x1, y1, x2, y2 });
         }
     }
 }
@@ -2108,7 +2108,7 @@ void map_invalidate_region(const CoordsXY& mins, const CoordsXY& maxs)
         rct_viewport* viewport = &g_viewport_list[i];
         if (viewport->width != 0)
         {
-            viewport_invalidate(viewport, left, top, right, bottom);
+            viewport_invalidate(viewport, { left, top, right, bottom });
         }
     }
 }

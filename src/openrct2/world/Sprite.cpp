@@ -126,7 +126,8 @@ static void invalidate_sprite_max_zoom(SpriteBase* sprite, int32_t maxZoom)
         rct_viewport* viewport = &g_viewport_list[i];
         if (viewport->width != 0 && viewport->zoom <= maxZoom)
         {
-            viewport_invalidate(viewport, sprite->sprite_left, sprite->sprite_top, sprite->sprite_right, sprite->sprite_bottom);
+            viewport_invalidate(
+                viewport, { sprite->sprite_left, sprite->sprite_top, sprite->sprite_right, sprite->sprite_bottom });
         }
     }
 }

@@ -278,4 +278,12 @@ struct registers
 assert_struct_size(registers, 7 * 4);
 #pragma pack(pop)
 
+struct Box
+{
+    int32_t left;
+    int32_t top;
+    int32_t right;
+    int32_t bottom;
+};
+
 #endif
